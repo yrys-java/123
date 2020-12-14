@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "MapPactice8_12_2020"
