@@ -18,7 +18,7 @@ public class RoutesRepository {
 
     public RoutesRepository(Application application) {
         RoutesDatabase routesDatabase = RoutesDatabase.getInstance(application);
-        routesDao = routesDatabase.inventoryDao();
+        routesDao = routesDatabase.routesDao();
         allInventory = routesDao.getAllRun();
     }
 

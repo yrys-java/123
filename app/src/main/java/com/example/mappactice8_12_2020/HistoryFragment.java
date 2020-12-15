@@ -21,7 +21,7 @@ import java.util.List;
 
 public class HistoryFragment extends Fragment {
 
-    private RoutesViewModel routesViewModel;
+    private static RoutesViewModel routesViewModel;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,8 +34,8 @@ public class HistoryFragment extends Fragment {
         final RecyclerViewAdapter adapter = new RecyclerViewAdapter();
         recyclerView.setAdapter(adapter);
 
-        routesViewModel = ViewModelProviders.of(requireActivity()).get(RoutesViewModel.class);
-        routesViewModel.getAllRun().observe(getViewLifecycleOwner(), new Observer<List<Routes>>() {
+        routesViewModel = ViewModelProviders.of(this).get(RoutesViewModel.class);
+        routesViewModel.getAllRun().observe(getActivity(), new Observer<List<Routes>>() {
             @Override
             public void onChanged(List<Routes> routes) {
                 adapter.setRoutesArrayList(routes);

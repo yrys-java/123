@@ -4,10 +4,10 @@
         android:id="@+id/run"
         android:enabled="true"
         android:icon="@drawable/run"
-        android:title="Run"/>
+        android:title="@string/run"/>
     <item
         android:id="@+id/history"
         android:enabled="true"
         android:icon="@drawable/history"
-        android:title="History"/>
+        android:title="@string/history"/>
 </menu>

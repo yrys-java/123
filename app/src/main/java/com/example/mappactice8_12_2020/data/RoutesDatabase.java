@@ -9,23 +9,19 @@ import androidx.room.RoomDatabase;
 import com.example.mappactice8_12_2020.data.model.Routes;
 
 @Database(entities = {Routes.class}, version = 1, exportSchema = false)
-public abstract class RoutesDatabase  extends RoomDatabase {
+public abstract class RoutesDatabase extends RoomDatabase {
 
     public static RoutesDatabase instance;
 
-    public abstract RoutesDao inventoryDao();
+    public abstract RoutesDao routesDao();
 
-    private static final String DB_NAME = "inventories.db";
-    private static final Object LOCK = new Object();
+    private static final String DB_NAME = "routes.db";
 
-    public static synchronized RoutesDatabase getInstance(Context context) {
-        synchronized (LOCK) {
-            if (instance == null) {
-                instance = Room.databaseBuilder(context, RoutesDatabase.class, DB_NAME)
-                        .allowMainThreadQueries()
-                        .fallbackToDestructiveMigration()
-                        .build();
-            }
+    public static RoutesDatabase getInstance(Context context) {
+        if (instance == null) {
+            instance = Room.databaseBuilder(context, RoutesDatabase.class, DB_NAME)
+                    .allowMainThreadQueries()
+                    .build();
         }
         return instance;
     }

@@ -7,30 +7,34 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.hardware.camera2.params.LensShadingMap;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
 
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.example.mappactice8_12_2020.data.model.Routes;
+import com.example.mappactice8_12_2020.data.model.RoutesViewModel;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
@@ -38,29 +42,31 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-
-import static android.app.Activity.RESULT_OK;
 
 public class RunFragment extends Fragment {
-
-    public static final String EXTRA_LENGTH = "length";
-    public static final String EXTRA_TIME = "time";
-    public static final String EXTRA_SPEED = "speed";
 
     private static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private GoogleMap map;
     private ArrayList<LatLng> arrayList;
     private LatLng latLng;
     private Chronometer mChronometer;
+    private RoutesViewModel routesViewModel;
+    private Button startButton;
+    private Button stopButton;
+    private TextView averageSpeed, distance;
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_run, container, false);
+        startButton = view.findViewById(R.id.buttonStartLocationUpdates);
+        stopButton = view.findViewById(R.id.buttonStopLocationUpdates);
+        averageSpeed = view.findViewById(R.id.speedAverage);
+        distance = view.findViewById(R.id.distance);
 
         arrayList = new ArrayList<LatLng>();
         mChronometer = (Chronometer) view.findViewById(R.id.chronometer1);
+        routesViewModel = ViewModelProviders.of(this).get(RoutesViewModel.class);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -78,13 +84,11 @@ public class RunFragment extends Fragment {
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         super.onLocationResult(locationResult);
-
                         if (locationResult != null && locationResult.getLastLocation() != null) {
                             double latitude = locationResult.getLastLocation().getLatitude();
                             double longitude = locationResult.getLastLocation().getLongitude();
 
                             latLng = new LatLng(latitude, longitude);
-
                             arrayList.add(latLng);
                             polyline();
                         }
@@ -93,7 +97,7 @@ public class RunFragment extends Fragment {
             }
         });
 
-        view.findViewById(R.id.buttonStartLocationUpdates).setOnClickListener(new View.OnClickListener() {
+        startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ContextCompat.checkSelfPermission(getActivity().getApplicationContext(),
@@ -102,47 +106,54 @@ public class RunFragment extends Fragment {
                             new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
                 } else {
 
+                    startButton.setVisibility(View.GONE);
+                    stopButton.setVisibility(View.VISIBLE);
+
+                    averageSpeed.setText(R.string.km_h);
+                    distance.setText(R.string.km);
+
                     arrayList.clear();
-
                     startLocationService();
-
                     mChronometer.setBase(SystemClock.elapsedRealtime());
                     mChronometer.start();
-
                 }
             }
         });
 
-        view.findViewById(R.id.buttonStopLocationUpdates).setOnClickListener(new View.OnClickListener() {
+        stopButton.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
+                stopButton.setVisibility(View.GONE);
+                startButton.setVisibility(View.VISIBLE);
 
                 stopLocationService();
-
                 float currentTime = (SystemClock.elapsedRealtime() - mChronometer.getBase());
 
-                @SuppressLint("DefaultLocale")
-                String length = String.format("%.2f км", calculateDistance2(arrayList));
-                @SuppressLint("DefaultLocale")
-                String speed = String.format("%.2f км/час", conventer(currentTime));
-                String time = makeReadable((int) currentTime);
+                @SuppressLint("DefaultLocale") final String length = String.format("%.2f км", calculateDistance2(arrayList));
+                @SuppressLint("DefaultLocale") final String speed = String.format("%.2f км/ч", conventer(currentTime));
+                final String time = makeReadable((int) currentTime);
                 mChronometer.stop();
+                averageSpeed.setText(speed);
+                distance.setText(length);
 
+                try {
+                    Routes routes = new Routes(length, time, speed);
+                    routesViewModel.insert(routes);
+                } catch (NullPointerException e) {
 
-                Log.d("result", "   length: " + length + ";     speed: " + speed + ";     time: " + time);
+                }
             }
         });
-
         return view;
     }
 
-    public float conventer(float timeInMillisecToHours) {
+    private float conventer(float timeInMillisecToHours) {
         float HH = ((timeInMillisecToHours / (1000 * 60 * 60)) % 24);
         return calculateDistance2(arrayList) / HH;
     }
 
-    public static String makeReadable(int milliseconds) {
+    private static String makeReadable(int milliseconds) {
         int SS = 0;
         int MM = 0;
         int HH = 0;

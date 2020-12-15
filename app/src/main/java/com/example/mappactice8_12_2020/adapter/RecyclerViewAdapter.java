@@ -48,6 +48,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return routesArrayList.size();
 
     }
+
     public void setRoutesArrayList(List<Routes> run) {
         this.routesArrayList = run;
         notifyDataSetChanged();
