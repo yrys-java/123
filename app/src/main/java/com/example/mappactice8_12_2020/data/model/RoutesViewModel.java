@@ -25,6 +25,9 @@ public class RoutesViewModel extends AndroidViewModel {
     public void insert(Routes routes) {
         routesRepository.insert(routes);
     }
+    public void delete(Routes routes) {
+        routesRepository.delete(routes);
+    }
 
     public LiveData<List<Routes>> getAllRun() {
         return allRun;

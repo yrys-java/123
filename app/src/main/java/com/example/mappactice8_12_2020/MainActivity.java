@@ -1,82 +1,49 @@
 package com.example.mappactice8_12_2020;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager.widget.ViewPager;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MenuItem;
+import android.os.Handler;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import com.example.mappactice8_12_2020.adapter.CategoryAdapter;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private BottomNavigationView bottomNavigationView;
-
-    private ViewPager viewPager;
-
-    private MenuItem prevMenuItem;
+    private final int TIME = 3200;
+    private ImageView logoView;
+    private TextView logo, slogan;
+    private Animation top, bottom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-
-        bottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation);
-
-        bottomNavigationView.setOnNavigationItemSelectedListener(
-                new BottomNavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        switch (item.getItemId()) {
-                            case R.id.run:
-                                viewPager.setCurrentItem(0);
-                                break;
-                            case R.id.history:
-                                viewPager.setCurrentItem(1);
-                                break;
-                        }
-                        return false;
-                    }
-                });
-
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        new Handler().postDelayed(new Runnable() {
             @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
+            public void run() {
+                Intent intent = new Intent(MainActivity.this, HomeAcitivity.class);
+                startActivity(intent);
+                finish();
             }
+        }, TIME);
 
-            @Override
-            public void onPageSelected(int position) {
-                if (prevMenuItem != null) {
-                    prevMenuItem.setChecked(false);
-                } else {
-                    bottomNavigationView.getMenu().getItem(0).setChecked(false);
-                }
-                Log.d("page", "onPageSelected: " + position);
-                bottomNavigationView.getMenu().getItem(position).setChecked(true);
-                prevMenuItem = bottomNavigationView.getMenu().getItem(position);
+        top = AnimationUtils.loadAnimation(this, R.anim.top_animation);
+        bottom = AnimationUtils.loadAnimation(this, R.anim.bottom_animation);
 
-            }
+        logoView = findViewById(R.id.imageView);
+        logo = findViewById(R.id.logo);
+        slogan = findViewById(R.id.slogan);
 
-            @Override
-            public void onPageScrollStateChanged(int state) {
+        logoView.setAnimation(top);
+        logo.setAnimation(bottom);
+        slogan.setAnimation(bottom);
 
-            }
-        });
-        setupViewPager(viewPager);
     }
 
-    private void setupViewPager(ViewPager viewPager) {
-        CategoryAdapter adapter = new CategoryAdapter(getSupportFragmentManager());
-        RunFragment runFragment = new RunFragment();
-        HistoryFragment historyFragment = new HistoryFragment();
-        adapter.addFragment(runFragment);
-        adapter.addFragment(historyFragment);
-        viewPager.setAdapter(adapter);
-    }
+
 }

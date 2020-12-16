@@ -49,6 +49,11 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     }
 
+    public Routes routesPosition(int position) {
+        return routesArrayList.get(position);
+    }
+
+
     public void setRoutesArrayList(List<Routes> run) {
         this.routesArrayList = run;
         notifyDataSetChanged();
